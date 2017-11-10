@@ -7,6 +7,12 @@ slidenumbers: true
 
 ---
 
+> A developer’s job encompasses more than just writing code. Our job is to produce results, and for that we have many tools at our disposal. SQL is one of them
+
+ -Dimitri Fontaine, “Mastering PostgreSQL in Application Development.”
+
+---
+
 ## Postgres
 
 is the "premier" open-source relational database.
@@ -44,7 +50,8 @@ Yes, reddit uses [postgres](https://github.com/reddit/reddit/wiki/Architecture-O
 
 ## Postgres 10
 
-We'll use postgres 10 in this presentation, but since we're not getting into any advanced features, any version should work.
+We'll use postgres 10 in this presentation, release in October 2017.
+
 
 ---
 
@@ -82,11 +89,15 @@ createdb: could not connect to database template1: FATAL:  role "ubuntu" does no
 
 ---
 
-## Postgresql Roles
+## Fighting the Postgres Permission System
 
-Roles are roughly the analogue of Unix user permissions.
+New users invariably struggle with the Postgres permission system, so let's fight it now.
 
-We've already created a superuser role `postgres`, so this will work:
+---
+
+## Postgres Roles $$\sim$$ Unix users
+
+The `postgres` role is a superuser, so this will work:
 
 ```bash
 $ createdb -U postgres testdb
@@ -105,7 +116,30 @@ $ psql -U postgres
 ```
 
 ```sql
-CREATE ROLE ubuntu LOGIN PASSWORD 'changeme' CREATEDB;
+CREATE ROLE ubuntu LOGIN PASSWORD 'changeme';
+```
+
+---
+
+## Who can do what?
+
+```bash
+$ psql
+testdb=> \du
+                                     List of roles
+  Role name   |                         Attributes                         | Member of
+--------------+------------------------------------------------------------+-----------
+ ubuntu       |                                                            | {}
+ postgres     | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
+```
+
+---
+
+## Editing permissions for Roles
+
+```sql
+ALTER ROLE ubuntu CREATEDB;
+ALTER USER ubuntu WITH NOCREATEDB;
 ```
 
 ---
@@ -124,22 +158,6 @@ testdb=> \dt
 
 ---
 
-## Postgres has a sophisticated permission system
-
-How can we figure out who can do what?
-
-```bash
-$ psql
-testdb=> \du
-                                     List of roles
-  Role name   |                         Attributes                         | Member of
---------------+------------------------------------------------------------+-----------
- ubuntu       | Create DB                                                  | {}
- postgres     | Superuser, Create role, Create DB, Replication, Bypass RLS | {}
-```
-
----
-
 ## People who want to pwn you are real, use authentication!
 
 > NoSQL, or rather NoAuthentication, has been a huge gift to the hacker
@@ -151,9 +169,15 @@ style that lack authentication by design.
 
 ---
 
+## Learn about Postgres Security
+
+A lovely talk is [here](http://thebuild.com/presentations/securing-postgresql-scale15x.pdf)
+
+---
+
 ## Password Login in Postgres
 
-To force passwords to be used on login, use Postgres's new support for [SCRAM-SHA-256](https://en.wikipedia.org/wiki/Salted_Challenge_Response_Authentication_Mechanism)
+To force passwords to be used on login, use Postgres 10's new support for [SCRAM-SHA-256](https://en.wikipedia.org/wiki/Salted_Challenge_Response_Authentication_Mechanism)
 
 Using SCRAM-SHA, the password never even goes over the network, only the hash.
 
@@ -224,7 +248,64 @@ Find the postgres data directory:
 SHOW data_directory;
 ```
 
+---
 
+## Creating tables
+
+
+```sql
+create table users (email character[256], active bool, date_joined date);
+```
+
+---
+
+## Examine table:
+
+```
+testdb=# \d users
+                     Table "public.users"
+   Column    |      Type      | Collation | Nullable | Default
+-------------+----------------+-----------+----------+---------
+ email       | character(1)[] |           |          |
+ active      | boolean        |           |          |
+ date_joined | date           |           |          |
+```
+
+---
+
+## Get rid of foolish tables
+
+```sql
+drop table bad_table;
+```
+
+---
+
+## List tables
+
+```bash
+$ psql -U ubuntu testdb
+testdb=# \dt
+         List of relations
+ Schema | Name  | Type  |   Owner
+--------+-------+-------+-----------
+ public | users | table | ubuntu
+(1 row)
+```
+
+---
+
+## Adding rows to table
+
+```sql
+CREATE TABLE numbers (thing1 int);
+INSERT INTO numbers VALUES (12);
+SELECT * FROM numbers;
+thing1
+--------
+    12
+(1 row)
+```
 
 ---
 
@@ -243,10 +324,26 @@ List of schemas
 --------------+----------
 public        | ubuntu
 first_things  | ubuntu
-second_thigns | ubuntu
+second_things | ubuntu
 ```
 
-List s
+
+---
+
+## Backups
+
+```bash
+$ pg_dump -h localhost -p 5432 -U ubuntu -F c -b -v -f compressed.backup mydb;
+$ pg_restore --dbname=mydb compressed.backup;
+```
+
+---
+
+## Getting help
+
+The Postgres IRC has a bunch of really helpful people.
+
+Before getting eaten alive on stackoverflow, go to #postgresql on irc.freenode.net.
 
 ---
 
