@@ -60,6 +60,7 @@ We'll use postgres 10 in this presentation, release in October 2017.
 ```bash
 $ sudo apt install -y gcc bison flex libssl-dev libreadline6 libreadline6-dev make
 $ wget https://ftp.postgresql.org/pub/source/v10.0/postgresql-10.0.tar.gz
+$ tar -xvf postgresql-10.0.tar.gz; cd postgresql-10.0.tar.gz
 $ ./configure --prefix=/usr
 $ make
 $ sudo make install
@@ -71,11 +72,11 @@ $ sudo make install
 
 ```bash
 $ sudo adduser postgres
-$ sudo mkdir /p01/pgsql/data
-$ sudo chown postgres /p01/pgsql/data
+$ sudo mkdir /pgsql/data
+$ sudo chown postgres /pgsql/data
 $ sudo su - postgres
-$ initdb -D /p01/pgsql/data
-$ pg_ctl -D /p01/pgsql/data/ -l logfile start
+$ initdb -D /pgsql/data
+$ pg_ctl -D /pgsql/data/ -l logfile start
 ```
 
 ---
