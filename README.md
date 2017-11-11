@@ -310,6 +310,32 @@ thing1
 
 ---
 
+## Constraints on tables
+
+```sql
+CREATE TABLE random_nums (thing1 integer UNIQUE);
+INSERT INTO random_nums VALUES (12);
+INSERT INTO random_nums VALUES (12);
+ERROR:  duplicate key value violates unique constraint "random_nums_thing1_key"
+DETAIL:  Key (thing1)=(12) already exists.
+```
+
+---
+
+## Unique together
+
+A common Django idiom is to make sure a username and slug are unique together:
+
+```sql
+CREATE TABLE users (username text, slug text, UNIQUE(username, slug));
+INSERT INTO users (username, slug) VALUES ('Jack', 'jack');
+INSERT INTO users (username, slug) VALUES ('Jack', 'jack');
+ERROR:  duplicate key value violates unique constraint "users_username_slug_key"
+DETAIL:  Key (username, slug)=(Jack, jack) already exists.
+```
+
+---
+
 ## Building schemas
 
 A schema is a namespace for data tables.
@@ -327,6 +353,11 @@ public        | ubuntu
 first_things  | ubuntu
 second_things | ubuntu
 ```
+
+
+---
+
+## psycopg2
 
 
 ---
